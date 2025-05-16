@@ -21,9 +21,13 @@ def fetch_comic(domain, work_id):
     description_element = soup.find("meta", attrs={"name": "description"})
     comic_description = description_element.attrs["content"]
 
+    ftb_comic_element = soup.find("meta", attrs={"name": "cXenseParse:ftb-comic"})
+    author = ftb_comic_element.attrs["content"]
+
     comic = {
         "title": comic_title,
         "description": comic_description,
+        "author": author,
     }
 
     # ↓↓↓ ページ構造によってこの部分を修正してください ↓↓↓
@@ -55,6 +59,10 @@ def fetch_comic(domain, work_id):
         except:
             continue
 
+        img_tag = a_tag.find("img")
+        enclosure = img_tag.attrs["src"]
+        episode["enclosure"] = enclosure
+
         episodes.append(episode)
     return comic, episodes
 
@@ -70,11 +78,14 @@ def rss_feed(domain, work_id):
     fg.description(comic["description"])
     for ep in episodes:
         fe = fg.add_entry()
-        fe.id(ep["id"])
+        fe.guid(ep["id"], permalink=True)
         fe.title(ep["title"])
         fe.link(href=ep["link"])
         if "date" in ep:
             fe.published(ep["date"])
+        fe.description(comic["title"])
+        fe.enclosure(ep["enclosure"], length=0, type="image/jpeg")
+        fe.author({"name": comic["author"]})
     rss_feed = fg.rss_str(pretty=True)
     return Response(rss_feed, mimetype="application/rss+xml")
 
