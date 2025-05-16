@@ -1,3 +1,4 @@
+import os
 from flask import Flask, Response, request
 import requests
 from bs4 import BeautifulSoup
@@ -79,4 +80,4 @@ def rss_feed(work_id):
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8080)
+    app.run(debug=True, port=int(os.environ.get("PORT", 8080)))
