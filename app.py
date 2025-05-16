@@ -9,8 +9,8 @@ from zoneinfo import ZoneInfo
 app = Flask(__name__)
 
 
-def fetch_comic(work_id):
-    url = f"https://gaugau.futabanex.jp/list/work/{work_id}"
+def fetch_comic(domain, work_id):
+    url = f"https://{domain}/list/work/{work_id}"
     response = requests.get(url)
     response.raise_for_status()
     soup = BeautifulSoup(response.content, "html.parser")
@@ -59,14 +59,14 @@ def fetch_comic(work_id):
     return comic, episodes
 
 
-@app.route("/rss/<work_id>")
-def rss_feed(work_id):
-    comic, episodes = fetch_comic(work_id)
+@app.route("/rss/<domain>/list/work/<work_id>")
+def rss_feed(domain, work_id):
+    comic, episodes = fetch_comic(domain, work_id)
     if not episodes:
         return Response("No episodes found or parsing error.", status=404)
     fg = FeedGenerator()
     fg.title(comic["title"])
-    fg.link(href=f"https://gaugau.futabanex.jp/list/work/{work_id}")
+    fg.link(href=f"https://{domain}/list/work/{work_id}")
     fg.description(comic["description"])
     for ep in episodes:
         fe = fg.add_entry()
